@@ -9,7 +9,7 @@ const bcrypt = require('bcrypt')
 
 const getAllUsers = asyncHandler(async (req, res) => {
     const users = await User.find().select('-password').lean()
-    if (!users){
+    if (!users?.length){
         return res.status(400).json({message : 'No users found!'})
     }
     res.json(users)
@@ -54,18 +54,19 @@ const  createNewUser = asyncHandler(async (req, res) => {
 // @access Private 
 
 const updateUser = asyncHandler(async (req, res) => {
-    const {id , username, roles, active, password } = req.body
-    
-    // confirm data
+    const { id, username, roles, active, password } = req.body
 
-    if (!id || !username || !Array.isArray(roles) || !roles.length || typeof active !== 'boolean'){
-        return res.status(400).json({message: "All fields are required."})
+    // Confirm data 
+    if (!id || !username || !Array.isArray(roles) || !roles.length || typeof active !== 'boolean') {
+        return res.status(400).json({ message: 'All fields except password are required' })
     }
+
+    // Does the user exist to update?
     const user = await User.findById(id).exec()
 
     if (!user) {
-        return res.status(400).json({message : "User not Found!"})        
-    }
+        return res.status(400).json({ message: 'User not found' })
+    } 
 
     // check for duplicate 
     const duplicate = await User.findOne({username}).lean().exec()
@@ -94,8 +95,8 @@ const deleteUser = asyncHandler(async (req, res) => {
         return res.status(400).json({message: "User ID required"})
     }
 
-    const notes = await Note.findOne({ user:id}).lean().exec()
-    if(notes?.length){
+    const note = await Note.findOne({ user:id}).lean().exec()
+    if(note){
         return res.status(400).json({message: "User has assigned notes"})
     }
     const user = await User.findById(id).exec()
