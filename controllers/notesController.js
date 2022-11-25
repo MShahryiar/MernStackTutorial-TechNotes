@@ -33,7 +33,7 @@ const createNewNote = asyncHandler(async(req,res)=> {
  const note = await Note.create({user, title, text})
 
  if (note){//created
-    res.status(201).json({message:`New Note "${note}" created `})
+    res.status(201).json({message:`New Note created `})
 }
 else{
     res.status(400).json({message:"Invalid Note Data Received"})
@@ -46,7 +46,18 @@ const updateNote = asyncHandler(async(req,res)=> {
 })
 
 const deleteNote = asyncHandler(async(req,res)=> {
-    res.status(201).json({ message : `Delete note`})
+    const {id} = req.body
+    if(!id){
+        res.status(400).json({message:"Note ID required."})
+    }
+    const note = await Note.findById(id).exec()
+    if(!note){
+        res.status(400).json({message:'Note not found!'})
+    }
+    const result = await note.deleteOne()
+    const reply = `Note "${note.title}" deleted!`
+
+    res.json(reply)
 })
 
 module.exports = {
