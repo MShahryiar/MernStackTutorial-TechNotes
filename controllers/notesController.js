@@ -42,7 +42,29 @@ else{
 
 
 const updateNote = asyncHandler(async(req,res)=> {
-    res.status(201).json({ message : `Update note`})
+    const {id, user, title, text} = req.body
+
+    // confirm data
+    if (!id || !user || !title || !text){
+        res.status(400).json({message:"All Field Required!"})
+    }
+    const note = await Note.findById(id).exec()
+    if(!note){
+        res.status(400).json({message:"Note not found!"})
+    }
+
+    // check for duplicate
+    const duplicate = await Note.findOne({title}).lean().exec()
+    // Only allow updates to original Note
+    if(duplicate && duplicate?._id.toString() !== id){
+        res.status(400).json({message:"Duplicate Title"})
+    }
+    note.user = user
+    note.title = title
+    note.text = text
+
+    const updatedNote = await note.save()
+    res.json({message:`${note.title} updated successfully!`})
 })
 
 const deleteNote = asyncHandler(async(req,res)=> {
