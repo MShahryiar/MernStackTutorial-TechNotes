@@ -42,7 +42,7 @@ else{
 
 
 const updateNote = asyncHandler(async(req,res)=> {
-    const {id, user, title, text} = req.body
+    const {id, user, title, text, completed} = req.body
 
     // confirm data
     if (!id || !user || !title || !text){
@@ -62,9 +62,11 @@ const updateNote = asyncHandler(async(req,res)=> {
     note.user = user
     note.title = title
     note.text = text
+    note.completed = completed
+
 
     const updatedNote = await note.save()
-    res.json({message:`${note.title} updated successfully!`})
+    res.json({message:`${updatedNote.title} updated successfully!`})
 })
 
 const deleteNote = asyncHandler(async(req,res)=> {
@@ -77,7 +79,7 @@ const deleteNote = asyncHandler(async(req,res)=> {
         res.status(400).json({message:'Note not found!'})
     }
     const result = await note.deleteOne()
-    const reply = `Note "${note.title}" deleted!`
+    const reply = `Note "${result.title}" deleted!`
 
     res.json(reply)
 })
