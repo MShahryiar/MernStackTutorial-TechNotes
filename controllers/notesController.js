@@ -11,7 +11,14 @@ const getAllNotes = asyncHandler(async(req,res)=> {
     if (!notes?.length){
         return res.status(400).json({message:"No notes found!"})
     }
-    res.json(notes)
+    // res.json(notes)
+    // Doing this to get the usernames, instead of User ID 
+    const notesWithUser = await Promise.all(notes.map(async (note) => {
+        const user = await User.findById(note.user).lean().exec()
+        return { ...note, username: user.username }
+    }))
+
+    res.json(notesWithUser)
 })
 // @desc Create new note
 // @route POST /notes
